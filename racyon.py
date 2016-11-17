@@ -7,6 +7,7 @@ A RExp is one of:
     - ['if' RExp RExp RExp]
     - ['define' Variable RExp]
     - ['define-struct' Variable SExp]
+    - ['require' String]
     - [RExp RExp ...]
 A Variable is a String
 A Value is one of:
@@ -24,6 +25,7 @@ import collections
 import operator
 import re
 import racket_functions
+from nltk.tokenize import SExprTokenizer
 
 pythOP = collections.namedtuple("pythOP", "handler")
 closure = collections.namedtuple("closure", "params body env")
@@ -79,6 +81,11 @@ def eval(rexp, env):
             env[rexp[1]+"-"+id] = racket_functions.racket_access_struct(index)
         env[rexp[1]+"?"] = racket_functions.racket_struct_huh(nt)
         return
+    if rexp[0] == 'require':
+        with open("/usr/share/racket/pkgs/htdp-lib/"+rexp[1]+".rkt") as f:
+            file = f.read()
+        runFile(file)
+        return
     if rexp[0] == 'define':
         env[rexp[1]] = eval(rexp[2], env)
     else:
@@ -117,12 +124,61 @@ def parseRExpr(split):
     else:
         return parseAtom(first)
 
-def run(strRexp):
+def runRexp(strRexp):
     strRexp = strRexp.lstrip().rstrip()
     split = ' '.join(re.split("(\(|\)|\ )", strRexp)).split()
     split = parseRExpr(split)
     return eval(split, topLevelEnv)
 
+def runFile(file):
+    def cntChar(char, str):
+        return str.count(char)
+    file = file.split()
+    file = [line for line in file if line.lstrip()[0] != "#"]
+    file = '\n'.join(file)
+    rexpList = SExprTokenizer().tokenize(file)
+    output = []
+    for rexp in rexpList:
+        output.append(runRexp(rexp))
+        print(output[-1])
+    return output
+
+def stripComments(listOfLines):
+    stripped = []
+    inStr = False
+    inMLComment = False
+    for line in listOfLines:
+        line, inStr = stripSemiColonComments(line, inStr)
+        #line, _, inMLComment = stripMLComments(line, inStr, inMLComment)
+        stripped.append(line)
+    return stripped
+
+"""
+def stripMLComments(line, currentlyInStr, currentlyInMLComment):
+    charBuffer = []
+    inStr = currentlyInStr
+    inMLComment = currentlyInMLComment
+    for index,char in enumerate(line):
+        if char == "\"" and not inMLComment:
+            inStr = not inStr
+        if char != ";" or inStr:
+            charBuffer.append(char)
+        if char == ";" and not inStr:
+"""
+
+def stripSemiColonComments(line, currentlyInStr):
+    charBuffer = []
+    inStr = currentlyInStr
+    for char in line:
+        if char == "\"":
+            inStr = not inStr
+        if char != ";" or inStr:
+            charBuffer.append(char)
+        if char == ";" and not inStr:
+            break
+    return ''.join(charBuffer), inStr
+
 if __name__ == "__main__":
     while True:
-        print(run(input(">")))
+        #runFile(input(">"))
+        print(stripSemiColonComments(input("> ")))
