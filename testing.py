@@ -47,5 +47,13 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(run("(train? train)"), True)
         self.assertEqual(run("(train? boat)"), False)
 
+    def test_loopingConstructs(self):
+        self.assertEqual(run("(map odd? (list 1 2 3 4 5))"), [True, False, True, False, True])
+        self.assertEqual(run("(filter odd? (list 1 2 3 4 5))"), [1,3,5])
+        self.assertEqual(run("(foldr + 0 (list 1 2 3 4))"), 1+2+3+4)
+        self.assertEqual(run("(foldl + 0 (list 1 2 3 4))"), 1+2+3+4)
+        self.assertEqual(run("(foldr / 1 (list 4 2))"), 4/2)
+        self.assertEqual(run("(foldl / 1 (list 4 2))"), 1/2/4)
+
 if __name__ == '__main__':
     unittest.main()
