@@ -30,6 +30,8 @@ closure = collections.namedtuple("closure", "params body env")
 
 topLevelEnv = { "+": operator.add,
                 "-": operator.sub,
+                "/": operator.truediv,
+                "*": operator.mul,
                 "or": racket_functions.racket_or,
                 "and": racket_functions.racket_and,
                 "equal?": operator.eq,
@@ -46,7 +48,13 @@ topLevelEnv = { "+": operator.add,
                 "third": racket_functions.racket_third,
                 "rest": racket_functions.racket_rest,
                 "#true": True,
-                "#false": False,}
+                "#false": False,
+                "map": racket_functions.racket_map,
+                "filter": racket_functions.racket_filter,
+                "foldr": racket_functions.racket_foldr,
+                "foldl": racket_functions.racket_foldl,
+                "odd?": lambda x: x%2==1,
+                "even?": lambda x: x%2==0,}
 
 def eval(rexp, env):
     # If it is a number, then return that
