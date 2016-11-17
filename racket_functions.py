@@ -1,4 +1,5 @@
 from collections import namedtuple
+from functools import reduce
 
 def racket_list(*args):
     return list(args)
@@ -37,3 +38,18 @@ def racket_access_struct(index):
 
 def racket_struct_huh(nt):
     return lambda int: isinstance(int, nt)
+
+def racket_map(function, list):
+    return [function(x) for x in list]
+
+def racket_filter(function, lst):
+    return list(filter(function, lst))
+
+def racket_foldl(function, base, lst):
+    return reduce(function, lst, base)
+
+def racket_foldr(function, base, lst):
+    acc = base
+    for elem in lst[::-1]:
+        acc = function(elem, acc)
+    return acc
